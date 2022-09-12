@@ -25,6 +25,7 @@ fun main(args: Array<String>) {
                             break
                         }
                         if (k == n - 1) println("Неудача. Искомый элемент не найден.")
+
                     }
                 }
                 println("TotalTime: $elapsedTime")
@@ -51,28 +52,57 @@ fun main(args: Array<String>) {
 
             3 -> {
                 //Сортировка
-                var right: Int
+                var left = 0
+                var right = initialList.size
                 val elapsedTime = measureNanoTime {
-                    var middleItem = 0
+                    var midd = 0
                     var left = 0
                     right = n
                     while (left <= right) {
-                        middleItem = (left + right) / 2
-                        if (itemToFind < initialList[middleItem]) right = middleItem - 1
-                        else if (itemToFind > initialList[middleItem])
-                            left = middleItem + 1
+                        midd = (left + right) / 2
+                        if (itemToFind < initialList[midd]) right = midd - 1
+                        else if (itemToFind > initialList[midd])
+                            left = midd + 1
                         else {
-                            println("Удача. Позиция: ${middleItem + 1}")
-                            break
+                            println("Удача. Позиция: ${midd+1}")
                         }
                         if (left > right) {
                             println("Неудача")
-                            break
+                            break;
                         }
                     }
                 }
                 println("TotalTime: $elapsedTime")
             }
+/*
+https://pastebin.com/2UGBP7nu
+ */
+
+            /*
+            int midd = 0, left = 0, right = N;
+	while (left <= right)
+	{
+		midd = (left + right) / 2;
+
+		if (key < mass[midd])
+			right = midd - 1;
+		else if (key > mass[midd])
+			left = midd + 1;
+		else
+		{
+			cout << "Удача. Позиция: " << midd + 1;
+			break;
+		}
+
+		if (left > right)
+		{
+			cout << "Неудача.";
+			break;
+		}
+	}
+
+             */
+
             4 -> {
                 return
             }
