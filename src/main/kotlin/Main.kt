@@ -1,5 +1,7 @@
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.system.measureNanoTime
+
 
 fun main(args: Array<String>) {
     var initialList = mutableListOf<Int>()
@@ -34,9 +36,7 @@ fun main(args: Array<String>) {
                         if (k == n - 1) println("---------------------------\nНеудача. Искомый элемент не найден.\n---------------------------")
                     }
                 }
-                println("TotalTime: $elapsedTime")
             }
-
             2 -> {
                 println("Введите искомый элемент")
                 val itemToFind = sc.nextInt()
@@ -90,7 +90,8 @@ fun main(args: Array<String>) {
                 println()
             }
             5-> {
-                return
+
+                    return
             }
         }
     }
