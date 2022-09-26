@@ -8,13 +8,10 @@ import kotlin.system.measureNanoTime
 
 fun main(args: Array<String>) {
     while (true) {
-        var timingMap = mutableMapOf<String, Long>()
-        timingMap["linear"] = 0L
-        timingMap["flinear"] = 0L
-        timingMap["binary"] = 0L
+        val timingMap = mutableListOf(0L,0L,0L)
         val sc = Scanner(System.`in`)
         println("В каком файле ищем?")
-        var choice = sc.nextInt()
+        val choice = sc.nextInt()
         if (choice == 0) return
         else if (choice == 999) {
             //Очистить файлы
@@ -31,10 +28,10 @@ fun main(args: Array<String>) {
             break
         }
         println("Поиск неудачный?")
-        var isFail = sc.nextInt() == 1
+        val isFail = sc.nextInt() == 1
         if (choice == -1) return
         val text: Array<String> = File("data${choice}k.txt").readText().trim().split(" ").toTypedArray()
-        var list = mutableListOf<Int>()
+        val list = mutableListOf<Int>()
         for (line in text) {
             list.add(line.toInt())
         }
@@ -51,10 +48,10 @@ fun main(args: Array<String>) {
                 }
             }
         }
-        timingMap["linear"] = elapsedTime1
-        //timingMap["linear"] = TimeUnit.MILLISECONDS.convert(elapsedTime1, TimeUnit.NANOSECONDS)
-
-        val initialListCopy = list
+        timingMap[0] = elapsedTime1
+        //timingMap[0] = TimeUnit.MILLISECONDS.convert(elapsedTime1, TimeUnit.NANOSECONDS)
+        println(timingMap[0])
+        val initialListCopy = list.toMutableList()
         val elapsedTime2 = measureNanoTime {
             val itemToFind = if (isFail) {
                 100000000
@@ -64,7 +61,7 @@ fun main(args: Array<String>) {
             initialListCopy.add(itemToFind)
             for ((i, k) in initialListCopy.withIndex()) {
                 if (k == itemToFind) {
-                    if (i > initialListCopy.size) {
+                    if (i == initialListCopy.lastIndex) {
                         break
                     } else {
                         break
@@ -72,12 +69,15 @@ fun main(args: Array<String>) {
                 }
             }
         }
-        timingMap["flinear"] = elapsedTime2
-        //timingMap["flinear"] = TimeUnit.MILLISECONDS.convert(elapsedTime2, TimeUnit.NANOSECONDS)
+        timingMap[1] = elapsedTime2
+        //timingMap[1] = TimeUnit.MILLISECONDS.convert(elapsedTime2, TimeUnit.NANOSECONDS)
+        println(timingMap[1])
 
-        var binaryList = list.toMutableList()
+
+
+        val binaryList = list.toMutableList()
         binaryList.sort()
-        var itemToFind: Int = if (isFail) {
+        val itemToFind: Int = if (isFail) {
             100000000
         } else {
             binaryList.last()
@@ -94,24 +94,24 @@ fun main(args: Array<String>) {
                     } else if (binaryList[mid] > itemToFind) {
                         high = mid - 1;
                     } else if (binaryList[mid] == itemToFind) {
-                        index = mid;
-                        break;
+                        index = mid
+                        break
                     }
                 }
             } catch (exc: java.lang.Exception) {
             }
         }
-        timingMap["binary"] = elapsedTime3
-        //timingMap["binary"] = TimeUnit.MILLISECONDS.convert(elapsedTime3, TimeUnit.NANOSECONDS)
+        timingMap[2] = elapsedTime3
+        //timingMap[2] = TimeUnit.MILLISECONDS.convert(elapsedTime3, TimeUnit.NANOSECONDS)
         saveRecord(timingMap, choice, isFail)
     }
 }
 
-fun saveRecord(timingMap: MutableMap<String, Long>, type: Int, isFail: Boolean) {
+fun saveRecord(timingMap: MutableList<Long>, type: Int, isFail: Boolean) {
     FileOutputStream(File("timing${type}k.txt"), true).bufferedWriter().use { writer ->
         if (!isFail) writer.append("---Поиск удачный---\n")
         else writer.append("---Поиск неудачный---\n")
-        writer.append("Последовательный поиск: ${timingMap["linear"]}\nБыстрый последовательный: ${timingMap["flinear"]}\nБинарный: ${timingMap["binary"]}\n")
+        writer.append("Последовательный поиск: ${timingMap[0]}\nБыстрый последовательный: ${timingMap[1]}\nБинарный: ${timingMap[2]}\n")
         writer.append("----END----\n")
         writer.flush()
     }
