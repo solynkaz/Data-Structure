@@ -1,6 +1,7 @@
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileReader
+import java.io.FileWriter
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureNanoTime
@@ -14,20 +15,37 @@ fun main(args: Array<String>) {
         val sc = Scanner(System.`in`)
         println("В каком файле ищем?")
         var choice = sc.nextInt()
-        println("Поиск удачный?")
+        if (choice == 0) return
+        else if (choice == 999) {
+            //Очистить файлы
+            var file = File("timing1k.txt")
+            file.delete()
+            file = File("timing10k.txt")
+            file.delete()
+            file = File("timing30k.txt")
+            file.delete()
+            file = File("timing50k.txt")
+            file.delete()
+            file = File("timing100k.txt")
+            file.delete()
+            break
+        }
+        println("Поиск неудачный?")
         var isFail = sc.nextInt() == 1
         if (choice == -1) return
-        val text: Array<String> = File("data${choice}k.txt").readText().split(" ").toTypedArray()
-        println(text[0])
+        val text: Array<String> = File("data${choice}k.txt").readText().trim().split(" ").toTypedArray()
+        var list = mutableListOf<Int>()
+        for (line in text) {
+            list.add(line.toInt())
+        }
         val elapsedTime1 = measureNanoTime {
             val itemToFind =
-                if (!isFail) {
-                    text.last()
+                if (isFail) {
+                    100000000
+                } else {
+                    list.last()
                 }
-                else {
-                    "fail"
-                }
-            for ((i, k) in text.withIndex()) {
+            for ((i, k) in list.withIndex()) {
                 if (k == itemToFind) {
                     break
                 }
@@ -35,19 +53,18 @@ fun main(args: Array<String>) {
         }
         timingMap["linear"] = elapsedTime1
         //timingMap["linear"] = TimeUnit.MILLISECONDS.convert(elapsedTime1, TimeUnit.NANOSECONDS)
+
+        val initialListCopy = list
         val elapsedTime2 = measureNanoTime {
-            val itemToFind =
-            if (!isFail) {
-                text.last()
+            val itemToFind = if (isFail) {
+                100000000
+            } else {
+                initialListCopy.last()
             }
-            else {
-                "fail"
-            }
-            val initialListCopy = text.toMutableList()
             initialListCopy.add(itemToFind)
             for ((i, k) in initialListCopy.withIndex()) {
                 if (k == itemToFind) {
-                    if (i > text.size) {
+                    if (i > initialListCopy.size) {
                         break
                     } else {
                         break
@@ -57,38 +74,45 @@ fun main(args: Array<String>) {
         }
         timingMap["flinear"] = elapsedTime2
         //timingMap["flinear"] = TimeUnit.MILLISECONDS.convert(elapsedTime2, TimeUnit.NANOSECONDS)
+
+        var binaryList = list.toMutableList()
+        binaryList.sort()
+        var itemToFind: Int = if (isFail) {
+            100000000
+        } else {
+            binaryList.last()
+        }
         val elapsedTime3 = measureNanoTime {
-            var index = -1;
-            val itemToFind =
-                if (!isFail) {
-                    text.last()
+            try {
+                var index = -1;
+                var low = 0
+                var high = binaryList.size
+                while (low <= high) {
+                    var mid = (low + high) / 2
+                    if (binaryList[mid] < itemToFind) {
+                        low = mid + 1;
+                    } else if (binaryList[mid] > itemToFind) {
+                        high = mid - 1;
+                    } else if (binaryList[mid] == itemToFind) {
+                        index = mid;
+                        break;
+                    }
                 }
-                else {
-                    "fail"
-                }
-            var low = 0
-            var high = text.size
-            while (low <= high) {
-                var mid = (low + high) / 2
-                if (text[mid] < itemToFind) {
-                    low = mid + 1;
-                } else if (text[mid] > itemToFind) {
-                    high = mid - 1;
-                } else if (text[mid] == itemToFind) {
-                    index = mid;
-                    break;
-                }
+            } catch (exc: java.lang.Exception) {
             }
         }
         timingMap["binary"] = elapsedTime3
         //timingMap["binary"] = TimeUnit.MILLISECONDS.convert(elapsedTime3, TimeUnit.NANOSECONDS)
-        saveRecord(timingMap, choice)
+        saveRecord(timingMap, choice, isFail)
     }
 }
 
-fun saveRecord(timingMap: MutableMap<String, Long>, type: Int) {
+fun saveRecord(timingMap: MutableMap<String, Long>, type: Int, isFail: Boolean) {
     FileOutputStream(File("timing${type}k.txt"), true).bufferedWriter().use { writer ->
-        writer.append("${timingMap["linear"]}         ${timingMap["flinear"]}         ${timingMap["binary"]}\n")
+        if (!isFail) writer.append("---Поиск удачный---\n")
+        else writer.append("---Поиск неудачный---\n")
+        writer.append("Последовательный поиск: ${timingMap["linear"]}\nБыстрый последовательный: ${timingMap["flinear"]}\nБинарный: ${timingMap["binary"]}\n")
+        writer.append("----END----\n")
         writer.flush()
     }
 }
